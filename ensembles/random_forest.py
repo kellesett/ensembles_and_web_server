@@ -6,8 +6,9 @@ import joblib
 import numpy as np
 import numpy.typing as npt
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.exceptions import NotFittedError
 
-from .utils import ConvergenceHistory
+from .utils import ConvergenceHistory, whether_to_stop, rmsle
 
 
 class RandomForestMSE:
@@ -29,6 +30,7 @@ class RandomForestMSE:
         self.forest = [
             DecisionTreeRegressor(**tree_params) for _ in range(n_estimators)
         ]
+        self.fitted_estimators = 0
 
     def fit(
         self,
@@ -54,7 +56,36 @@ class RandomForestMSE:
             ConvergenceHistory | None: Instance of `ConvergenceHistory` if `trace=True` or if validation data is provided.
         """
         
-        ...
+        if y_val is not None:
+            trace = True
+        elif trace is None:
+            trace = False
+        
+        history = ConvergenceHistory(train=[], val=[])
+        pred = np.zeros((X.shape[0]))
+
+        if y_val is not None:
+            val_pred = np.zeros((X_val.shape[0]))
+        for epoch, estimator in enumerate(self.forest):
+            estimator.fit(X, y)
+            self.fitted_estimators += 1
+
+            pred += estimator.predict(X)
+            history['train'].append(rmsle(y, pred / self.fitted_estimators))
+            
+            if y_val is not None:
+                val_pred += estimator.predict(X_val)
+                history['val'].append(rmsle(y_val, val_pred / self.fitted_estimators))
+            
+            if patience is not None and whether_to_stop(history, patience):
+                break
+
+        if trace:        
+            return history
+        else:
+            return None
+
+
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """
@@ -68,8 +99,14 @@ class RandomForestMSE:
         Returns:
             npt.NDArray[np.float64]: Predicted values, array of shape (n_objects,).
         """
-        
-        ...
+        if self.fitted_estimators == 0:
+            raise NotFittedError
+
+        predictions = np.empty((X.shape[0], self.fitted_estimators))
+        for i in range(self.fitted_estimators):
+            predictions[:, i] = self.forest[i].predict(X)
+
+        return np.mean(predictions, axis=1)
 
     def dump(self, dirpath: str) -> None:
         """

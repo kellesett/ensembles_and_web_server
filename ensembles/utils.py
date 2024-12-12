@@ -72,4 +72,9 @@ def whether_to_stop(convergence_history: ConvergenceHistory, patience: int) -> b
         If neither 'train' nor 'val' key is present in the convergence_history.
     """
     
-    ...
+    if convergence_history['val'] is not None:
+        return np.allclose(np.diff(convergence_history['val'])[-patience + 1:], 0)
+    elif convergence_history['train'] is not None:
+        return np.allclose(np.diff(convergence_history['train'])[-patience + 1:], 0)
+    else:
+        raise KeyError
