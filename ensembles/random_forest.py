@@ -55,7 +55,8 @@ class RandomForestMSE:
         Returns:
             ConvergenceHistory | None: Instance of `ConvergenceHistory` if `trace=True` or if validation data is provided.
         """
-        
+        np.random.seed(42)
+
         if y_val is not None:
             trace = True
         elif trace is None:
@@ -67,7 +68,9 @@ class RandomForestMSE:
         if y_val is not None:
             val_pred = np.zeros((X_val.shape[0]))
         for epoch, estimator in enumerate(self.forest):
-            estimator.fit(X, y)
+            idx = np.random.choice(np.arange(y.shape[0]), y.shape[0], replace=True)
+
+            estimator.fit(X[idx], y[idx])
             self.fitted_estimators += 1
 
             pred += estimator.predict(X)
