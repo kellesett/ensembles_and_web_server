@@ -1,4 +1,5 @@
 import json
+from time import perf_counter
 from pathlib import Path
 from typing import Any
 
@@ -70,6 +71,7 @@ class GradientBoostingMSE:
         elif trace is None:
             trace = False
         
+        times = list()
         history = ConvergenceHistory(train=[], val=[])
         pred = np.zeros((X.shape[0]))
 
@@ -78,10 +80,12 @@ class GradientBoostingMSE:
         for epoch, estimator in enumerate(self.forest):
             idx = np.random.choice(np.arange(y.shape[0]), y.shape[0], replace=True)
             grad = y - pred
+
+            start = perf_counter()
             estimator.fit(X[idx], grad[idx])
             self.fitted_estimators += 1
-
             pred += self.learning_rate * estimator.predict(X)
+            times.append(perf_counter() - start)
             history['train'].append(rmsle(y, pred))
             
             if y_val is not None:
@@ -92,7 +96,7 @@ class GradientBoostingMSE:
                 break
 
         if trace:        
-            return history
+            return history, times
         else:
             return None
 

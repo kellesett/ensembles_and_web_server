@@ -1,4 +1,5 @@
 import json
+from time import perf_counter
 from pathlib import Path
 from typing import Any
 
@@ -62,6 +63,7 @@ class RandomForestMSE:
         elif trace is None:
             trace = False
         
+        times = list()
         history = ConvergenceHistory(train=[], val=[])
         pred = np.zeros((X.shape[0]))
 
@@ -70,10 +72,12 @@ class RandomForestMSE:
         for epoch, estimator in enumerate(self.forest):
             idx = np.random.choice(np.arange(y.shape[0]), y.shape[0], replace=True)
 
+            start = perf_counter()
             estimator.fit(X[idx], y[idx])
             self.fitted_estimators += 1
 
             pred += estimator.predict(X)
+            times.append(perf_counter() - start)
             history['train'].append(rmsle(y, pred / self.fitted_estimators))
             
             if y_val is not None:
@@ -84,7 +88,7 @@ class RandomForestMSE:
                 break
 
         if trace:        
-            return history
+            return history, times
         else:
             return None
 
