@@ -1,4 +1,5 @@
 import json
+from time import perf_counter
 from pathlib import Path
 from typing import Any
 
@@ -6,8 +7,9 @@ import joblib
 import numpy as np
 import numpy.typing as npt
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.exceptions import NotFittedError
 
-from .utils import ConvergenceHistory
+from .utils import ConvergenceHistory, whether_to_stop, rmse
 
 
 class RandomForestMSE:
@@ -29,6 +31,7 @@ class RandomForestMSE:
         self.forest = [
             DecisionTreeRegressor(**tree_params) for _ in range(n_estimators)
         ]
+        self.fitted_estimators = 0
 
     def fit(
         self,
@@ -47,14 +50,49 @@ class RandomForestMSE:
             y (npt.NDArray[np.float64]): Regression labels, array of shape (n_objects,).
             X_val (npt.NDArray[np.float64] | None, optional): Validation set of objects, array of shape (n_val_objects, n_features). Defaults to None.
             y_val (npt.NDArray[np.float64] | None, optional): Validation set of labels, array of shape (n_val_objects,). Defaults to None.
-            trace (bool | None, optional): Whether to calculate rmsle while training. True by default if validation data is provided. Defaults to None.
+            trace (bool | None, optional): Whether to calculate rmse while training. True by default if validation data is provided. Defaults to None.
             patience (int | None, optional): Number of training steps without decreasing the train loss (or validation if provided), after which to stop training. Defaults to None.
 
         Returns:
             ConvergenceHistory | None: Instance of `ConvergenceHistory` if `trace=True` or if validation data is provided.
         """
+        np.random.seed(42)
+
+        if y_val is not None:
+            trace = True
+        elif trace is None:
+            trace = False
         
-        ...
+        times = list()
+        history = ConvergenceHistory(train=[], val=[])
+        pred = np.zeros((X.shape[0]))
+
+        if y_val is not None:
+            val_pred = np.zeros((X_val.shape[0]))
+        for epoch, estimator in enumerate(self.forest):
+            idx = np.random.choice(np.arange(y.shape[0]), y.shape[0], replace=True)
+
+            start = perf_counter()
+            estimator.fit(X[idx], y[idx])
+            self.fitted_estimators += 1
+
+            pred += estimator.predict(X)
+            times.append(perf_counter() - start)
+            history['train'].append(rmse(y, pred / self.fitted_estimators))
+            
+            if y_val is not None:
+                val_pred += estimator.predict(X_val)
+                history['val'].append(rmse(y_val, val_pred / self.fitted_estimators))
+            
+            if patience is not None and whether_to_stop(history, patience):
+                break
+
+        if trace:        
+            return history, times
+        else:
+            return None
+
+
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """
@@ -68,8 +106,14 @@ class RandomForestMSE:
         Returns:
             npt.NDArray[np.float64]: Predicted values, array of shape (n_objects,).
         """
-        
-        ...
+        if self.fitted_estimators == 0:
+            raise NotFittedError
+
+        predictions = np.empty((X.shape[0], self.fitted_estimators))
+        for i in range(self.fitted_estimators):
+            predictions[:, i] = self.forest[i].predict(X)
+
+        return np.mean(predictions, axis=1)
 
     def dump(self, dirpath: str) -> None:
         """
