@@ -36,3 +36,6 @@ class MessageResponse(BaseModel):
 
 class BoolResponse(BaseModel):
     response: bool
+
+class PredictResponse(BaseModel):
+    predicted_values: list[float]

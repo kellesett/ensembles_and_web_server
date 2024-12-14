@@ -10,7 +10,8 @@ from .schemas import (
     ExistingExperimentsResponse,
     MessageResponse,
     BoolResponse,
-    ConvergenceHistoryResponse
+    ConvergenceHistoryResponse,
+    PredictResponse
 )
 
 from ensembles import RandomForestMSE, GradientBoostingMSE
@@ -18,6 +19,8 @@ from ensembles.utils import ConvergenceHistory
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
+
+from io import StringIO
 
 app = FastAPI()
 
@@ -87,12 +90,11 @@ async def existing_experiments(experiment_name: str = Query(...)) -> BoolRespons
 
 @app.put("/train_model/")
 async def register_experiment(experiment_name: str = Query(...)) -> MessageResponse:
-    path = os.sep.join(["runs", experiment_name, "train_file.csv"])
-    df = pd.read_csv(path)
+    train_file_path = get_runs_dir() / experiment_name / "train_file.csv"
+    df = pd.read_csv(train_file_path)
 
-    path = Path(path)
-    path = path.with_name("config.json")
-    config = ExperimentConfig(**json.loads(path.read_text()))
+    config_path = train_file_path.with_name("config.json")
+    config = ExperimentConfig(**json.loads(config_path.read_text()))
 
     models = {
         "Random Forest": RandomForestMSE,
@@ -121,7 +123,7 @@ async def register_experiment(experiment_name: str = Query(...)) -> MessageRespo
     history = model.fit(X_train, y_train, X_val, y_val, trace=True)[0]
     model.dump(os.sep.join(["runs", experiment_name, "model"]))
 
-    history_path = path.with_name("convergence_history.json")
+    history_path = config_path.with_name("convergence_history.json")
     history_path.write_text(json.dumps(history, indent=4))
 
     response = MessageResponse(
@@ -134,4 +136,26 @@ async def register_experiment(experiment_name: str = Query(...)) -> MessageRespo
 async def existing_experiments(experiment_name: str = Query(...)) -> ConvergenceHistoryResponse:
     path = Path(os.sep.join(["runs", experiment_name, 'convergence_history.json']))
     response = ConvergenceHistoryResponse(**json.loads(path.read_text()))
+    return response
+
+
+@app.get("/predict/")
+async def existing_experiments(experiment_name: str = Query(...),
+                               test_file: UploadFile = File(...)) -> PredictResponse:
+    file_content = await test_file.read()
+    df = pd.read_csv(StringIO(file_content.decode('utf-8')))
+    model_path = get_runs_dir() / experiment_name / 'model'
+    config_path = get_runs_dir() / experiment_name / 'config.json'
+
+    config = ExperimentConfig(**json.loads(config_path.read_text()))
+    models = {
+        "Random Forest": RandomForestMSE,
+        "Gradient Boosting": GradientBoostingMSE
+    }
+    model_type = models[config.ml_model]
+    model = model_type.load(model_path)
+
+    response = PredictResponse(
+        predicted_values=model.predict(df.to_numpy())
+    )
     return response
