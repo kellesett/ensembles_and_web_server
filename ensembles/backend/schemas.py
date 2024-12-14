@@ -31,3 +31,6 @@ class ConvergenceHistoryResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+class BoolResponse(BaseModel):
+    response: bool

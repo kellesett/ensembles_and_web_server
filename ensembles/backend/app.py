@@ -5,7 +5,12 @@ from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File, Form, Query
 
-from .schemas import ExistingExperimentsResponse, MessageResponse, ExperimentConfig
+from .schemas import (
+    ExperimentConfig,
+    ExistingExperimentsResponse,
+    MessageResponse,
+    BoolResponse
+)
 
 app = FastAPI()
 
@@ -77,3 +82,19 @@ async def existing_experiments(experiment_name: str = Query(...)) -> ExperimentC
     response = ExperimentConfig(**experiment_config)
     return response
 
+
+@app.get("/needs_training/")
+async def existing_experiments(experiment_name: str = Query(...)) -> BoolResponse:
+    """
+    Get information about existing experiments.
+
+    This endpoint scans the directory where experiments are stored and returns a list of
+    existing experiments along with their absolute paths. Each experiment is stored as
+    a directory in the host filesystem.
+
+    Returns:
+        ExistingExperimentsResponse: A response containing the location of the experiments
+        directory, absolute paths of the experiment directories, and the names of the experiments.
+    """
+    path = Path(os.sep.join(["runs", experiment_name, 'params.json']))
+    return BoolResponse(response=path.exists())
