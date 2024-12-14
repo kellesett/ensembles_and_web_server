@@ -2,6 +2,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from ensembles.utils import ConvergenceHistory
 
 class ExistingExperimentsResponse(BaseModel):
     """
@@ -16,3 +17,25 @@ class ExistingExperimentsResponse(BaseModel):
     location: Path
     experiment_names: list[str] = []
     abs_paths: list[Path] = []
+
+
+class ExperimentConfig(BaseModel):
+    name: str
+    ml_model: str
+    n_estimators: int
+    max_depth: int
+    max_features: str | int | float
+    target_column: str
+
+class ConvergenceHistoryResponse(BaseModel):
+    train: list[float]
+    val: list[float]
+
+class MessageResponse(BaseModel):
+    message: str
+
+class BoolResponse(BaseModel):
+    response: bool
+
+class PredictResponse(BaseModel):
+    predicted_values: list[float]
