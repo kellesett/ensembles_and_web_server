@@ -9,7 +9,7 @@ import numpy.typing as npt
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.exceptions import NotFittedError
 
-from .utils import ConvergenceHistory, whether_to_stop, rmsle
+from .utils import ConvergenceHistory, whether_to_stop, rmse
 
 
 class RandomForestMSE:
@@ -50,7 +50,7 @@ class RandomForestMSE:
             y (npt.NDArray[np.float64]): Regression labels, array of shape (n_objects,).
             X_val (npt.NDArray[np.float64] | None, optional): Validation set of objects, array of shape (n_val_objects, n_features). Defaults to None.
             y_val (npt.NDArray[np.float64] | None, optional): Validation set of labels, array of shape (n_val_objects,). Defaults to None.
-            trace (bool | None, optional): Whether to calculate rmsle while training. True by default if validation data is provided. Defaults to None.
+            trace (bool | None, optional): Whether to calculate rmse while training. True by default if validation data is provided. Defaults to None.
             patience (int | None, optional): Number of training steps without decreasing the train loss (or validation if provided), after which to stop training. Defaults to None.
 
         Returns:
@@ -78,11 +78,11 @@ class RandomForestMSE:
 
             pred += estimator.predict(X)
             times.append(perf_counter() - start)
-            history['train'].append(rmsle(y, pred / self.fitted_estimators))
+            history['train'].append(rmse(y, pred / self.fitted_estimators))
             
             if y_val is not None:
                 val_pred += estimator.predict(X_val)
-                history['val'].append(rmsle(y_val, val_pred / self.fitted_estimators))
+                history['val'].append(rmse(y_val, val_pred / self.fitted_estimators))
             
             if patience is not None and whether_to_stop(history, patience):
                 break

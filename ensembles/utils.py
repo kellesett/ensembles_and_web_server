@@ -44,6 +44,26 @@ def rmsle(y: npt.NDArray[np.float64], z: npt.NDArray[np.float64]) -> np.float64:
     return float(res)
 
 
+def rmse(y: npt.NDArray[np.float64], z: npt.NDArray[np.float64]) -> np.float64:
+    """
+    Calculate the Root Mean Squared Error (RMSE) between two arrays.
+
+    Args
+    ----
+    y : npt.NDArray[np.float64]
+        The true values.
+    z : npt.NDArray[np.float64]
+        The predicted values.
+
+    Returns
+    -------
+    float
+        The RMSE value.
+    """
+    res = np.sqrt(np.mean((y - z) ** 2))
+    return float(res)
+
+
 def whether_to_stop(convergence_history: ConvergenceHistory, patience: int) -> bool:
     """
     Determine whether to stop training based on the convergence history.
