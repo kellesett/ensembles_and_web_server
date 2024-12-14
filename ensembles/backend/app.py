@@ -57,3 +57,23 @@ async def register_experiment(experiment_config: str = Form(...),
         message='OK'
     )
     return response
+
+
+@app.get("/load_experiment_config/")
+async def existing_experiments(experiment_name: str = Query(...)) -> ExperimentConfig:
+    """
+    Get information about existing experiments.
+
+    This endpoint scans the directory where experiments are stored and returns a list of
+    existing experiments along with their absolute paths. Each experiment is stored as
+    a directory in the host filesystem.
+
+    Returns:
+        ExistingExperimentsResponse: A response containing the location of the experiments
+        directory, absolute paths of the experiment directories, and the names of the experiments.
+    """
+    path = Path(os.sep.join(["runs", experiment_name, 'config.json']))
+    experiment_config = json.loads(path.read_text())
+    response = ExperimentConfig(**experiment_config)
+    return response
+
