@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "web-server"
+version = "0.1.0"
+description = "Pet project with few implemented algorithms of machine learning and FastApi interface"
+authors = ["Dolgushev Gleb <dgdkrs1@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.41.1"
+python-dotenv = "^1.0.1"
+pandas = "^2.2.3"
+numpy = "^2.2.0"
+fastapi = "^0.115.6"
+gunicorn = "^23.0.0"
+uvicorn = "^0.33.0"
+scikit-learn = "^1.6.0"
+plotly = "^5.24.1"
+python-multipart = "^0.0.19"
+
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
