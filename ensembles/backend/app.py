@@ -1,8 +1,11 @@
+import json
+import os
+
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, Form, Query
 
-from .schemas import ExistingExperimentsResponse
+from .schemas import ExistingExperimentsResponse, MessageResponse, ExperimentConfig
 
 app = FastAPI()
 
@@ -30,4 +33,27 @@ async def existing_experiments() -> ExistingExperimentsResponse:
         return response
     response.abs_paths = [obj for obj in path.iterdir() if obj.is_dir()]
     response.experiment_names = [filepath.stem for filepath in response.abs_paths]
+    return response
+
+
+@app.post("/register_experiment/")
+async def register_experiment(experiment_config: str = Form(...),
+                              train_file: UploadFile = File(...)) -> MessageResponse:
+    
+    experiment_config = ExperimentConfig(**json.loads(experiment_config))
+    path = Path(os.sep.join(["runs", f"{experiment_config.name}"]))
+    if path.exists():
+        raise ValueError('WrOng NaMe BrOtHer')
+    path.mkdir(mode=0o777)
+
+    config_path = path.joinpath('config.json')
+    config_path.write_text(experiment_config.model_dump_json())
+    config_path.chmod(0o777)
+    train_file_path = path.joinpath('train_file.csv')
+    train_file_path.write_bytes(train_file.file.read())
+    train_file_path.chmod(0o777)
+
+    response = MessageResponse(
+        message='OK'
+    )
     return response
