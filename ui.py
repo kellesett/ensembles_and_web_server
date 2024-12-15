@@ -8,7 +8,8 @@ from ensembles.backend import ExperimentConfig
 from ensembles.frontend import Client, plot_learning_curves
 
 load_dotenv()
-BASE_URL = os.environ["BASE_URL"]
+BACKEND_HOST = os.environ["BACKEND_HOST"]
+BASE_URL = f'http://{BACKEND_HOST}:8000'
 MODEL_OPTIONS = ["Random Forest", "Gradient Boosting"]
 MAX_FEATURES_OPTIONS = ["all", "sqrt", "log2", "custom integer", "custom float"]
 
