@@ -135,6 +135,7 @@ class GradientBoostingMSE:
             "n_estimators": self.n_estimators,
             "learning_rate": self.learning_rate,
             "const_prediction": self.const_prediction,
+            "fitted_estimators": self.fitted_estimators
         }
         with (path / "params.json").open("w") as file:
             json.dump(params, file, indent=4)
@@ -166,5 +167,6 @@ class GradientBoostingMSE:
             for i in range(params["n_estimators"])
         ]
         instance.const_prediction = params["const_prediction"]
+        instance.fitted_estimators = params["fitted_estimators"]
 
         return instance

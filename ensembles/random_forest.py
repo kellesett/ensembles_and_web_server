@@ -125,7 +125,10 @@ class RandomForestMSE:
         path = Path(dirpath)
         path.mkdir(parents=True)
 
-        params = {"n_estimators": self.n_estimators}
+        params = {
+            "n_estimators": self.n_estimators,
+            "fitted_estimators": self.fitted_estimators
+        }
         with (path / "params.json").open("w") as file:
             json.dump(params, file, indent=4)
 
@@ -155,5 +158,6 @@ class RandomForestMSE:
             joblib.load(trees_path / f"tree_{i:04d}.joblib")
             for i in range(params["n_estimators"])
         ]
+        instance.fitted_estimators = params["fitted_estimators"]
 
         return instance
