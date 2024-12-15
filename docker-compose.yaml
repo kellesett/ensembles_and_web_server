@@ -1,0 +1,22 @@
+services:
+  backend:
+    build: .
+    env_file:
+      - .env
+    container_name: backend
+    volumes:
+      - ./:/app
+    ports:
+      - 8000:8000
+    command: sh -c "chmod +x /app/scripts/launch_backend.sh && /app/scripts/launch_backend.sh"
+
+  streamlit:
+    build: .
+    env_file:
+      - .env
+    container_name: streamlit
+    volumes:
+      - ./:/app
+    ports:
+      - 8501:8501
+    command: sh -c "chmod +x /app/scripts/launch_streamlit.sh && /app/scripts/launch_streamlit.sh"
