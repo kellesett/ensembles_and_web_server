@@ -3,7 +3,7 @@ from typing import Any
 import numpy.typing as npt
 import requests
 
-from ensembles.utils import ConvergenceHistory
+from ensembles.backend.schemas import ExperimentConfig, ConvergenceHistoryResponse
 
 
 class Client:
@@ -39,7 +39,12 @@ class Client:
             train_file (Any): The training data file.
         """
 
-        ...
+        response = self.session.post(
+            f"{self.base_url}/register_experiment/",
+            data={"experiment_config": experiment_config.model_dump_json()},
+            files={"train_file": train_file}
+        )
+        response.raise_for_status()
 
     def load_experiment_config(self, experiment_name) -> dict[str, Any]:
         """
@@ -52,7 +57,12 @@ class Client:
             ExperimentConfig: The configuration of the experiment.
         """
 
-        ...
+        response = self.session.get(
+            f"{self.base_url}/load_experiment_config/",
+            params={'experiment_name': experiment_name}
+        )
+        response.raise_for_status()
+        return ExperimentConfig(**response.json())
 
     def is_training_needed(self, experiment_name) -> bool:
         """
@@ -64,7 +74,13 @@ class Client:
         Returns:
             bool: indicator was the model ever trained.
         """
-        ...
+
+        response = self.session.get(
+            f"{self.base_url}/needs_training/",
+            params={'experiment_name': experiment_name}
+        )
+        response.raise_for_status()
+        return response.json()['flag']
 
     def train_model(self, experiment_name) -> None:
         """
@@ -74,9 +90,13 @@ class Client:
             experiment_name (Any): The name of the experiment.
         """
 
-        ...
+        response = self.session.put(
+            f"{self.base_url}/train_model/",
+            params={'experiment_name': experiment_name}
+        )
+        response.raise_for_status()
 
-    def get_convergence_history(self, experiment_name) -> ConvergenceHistory:
+    def get_convergence_history(self, experiment_name) -> ConvergenceHistoryResponse:
         """
         Retrieves the convergence history of the specified experiment.
 
@@ -87,7 +107,12 @@ class Client:
             ConvergenceHistory: The convergence history of the experiment.
         """
 
-        ...
+        response = self.session.get(
+            f"{self.base_url}/get_convergence_history/",
+            params={'experiment_name': experiment_name}
+        )
+        response.raise_for_status()
+        return ConvergenceHistoryResponse(**response.json())
 
     def predict(self, experiment_name, test_file) -> npt.NDArray[Any]:
         """
@@ -101,4 +126,10 @@ class Client:
             npt.NDArray[Any]: The predictions made by the model.
         """
 
-        ...
+        response = self.session.get(
+            f"{self.base_url}/predict/",
+            params={"experiment_name": experiment_name},
+            files={"test_file": test_file}
+        )
+        response.raise_for_status()
+        return response.json()["predicted_values"]
