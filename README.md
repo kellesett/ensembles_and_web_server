@@ -8,22 +8,25 @@ docker compose build
 docker compose up
 ```
 
-## Создание нового эксперимента
-
 Далее предоставим инструкцию по взаимодейсвию с интерфейсом.
 
-![alt text](start-page.jpg)
-![alt text](expreg.jpg)
+## Создание нового эксперимента
+
+![alt text](fig/start-page.jpg)
+![alt text](fig/expreg.jpg)
 
 
 ## Обучение модели
-![alt text](training.jpg)
+Для последующей работы необходимо обучить выбранную модель
+
+![alt text](fig/training.jpg)
 
 Далее вы должны получить результаты экспериментов в виде
 
-![alt text](training-res.png)
+![alt text](fig/training-res.png)
 
 ## Получение предсказаний на новых данных
+После обучения модели можно загрузить тестовый набор данных и получить предсказания модели для них.
 
-![alt text](predictions.jpg)
+![alt text](fig/predictions.jpg)
 
