@@ -62,7 +62,7 @@ class RandomForestMSE:
             trace = True
         elif trace is None:
             trace = False
-        
+
         times = list()
         history = ConvergenceHistory(train=[], val=[])
         pred = np.zeros((X.shape[0]))
@@ -70,7 +70,8 @@ class RandomForestMSE:
         if y_val is not None:
             val_pred = np.zeros((X_val.shape[0]))
         for epoch, estimator in enumerate(self.forest):
-            idx = np.random.choice(np.arange(y.shape[0]), y.shape[0], replace=True)
+            idx = np.random.choice(
+                np.arange(y.shape[0]), y.shape[0], replace=True)
 
             start = perf_counter()
             estimator.fit(X[idx], y[idx])
@@ -79,20 +80,19 @@ class RandomForestMSE:
             pred += estimator.predict(X)
             times.append(perf_counter() - start)
             history['train'].append(rmse(y, pred / self.fitted_estimators))
-            
+
             if y_val is not None:
                 val_pred += estimator.predict(X_val)
-                history['val'].append(rmse(y_val, val_pred / self.fitted_estimators))
-            
+                history['val'].append(
+                    rmse(y_val, val_pred / self.fitted_estimators))
+
             if patience is not None and whether_to_stop(history, patience):
                 break
 
-        if trace:        
+        if trace:
             return history, times
         else:
             return None
-
-
 
     def predict(self, X: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         """

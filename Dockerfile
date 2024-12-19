@@ -1,5 +1,6 @@
 FROM python:3.12
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"] 
 RUN curl -sSL https://install.python-poetry.org | python
 
 ENV PATH="${PATH}:/root/.local/bin"

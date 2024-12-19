@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from ensembles.utils import ConvergenceHistory
 
+
 class ExistingExperimentsResponse(BaseModel):
     """
     Response model for existing experiments.
@@ -27,15 +28,19 @@ class ExperimentConfig(BaseModel):
     max_features: str | int | float
     target_column: str
 
+
 class ConvergenceHistoryResponse(BaseModel):
     train: list[float]
     val: list[float]
 
+
 class MessageResponse(BaseModel):
     message: str
 
+
 class BoolResponse(BaseModel):
     response: bool
+
 
 class PredictResponse(BaseModel):
     predicted_values: list[float]

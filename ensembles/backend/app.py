@@ -47,14 +47,15 @@ async def existing_experiments() -> ExistingExperimentsResponse:
     if not path.exists():
         return response
     response.abs_paths = [obj for obj in path.iterdir() if obj.is_dir()]
-    response.experiment_names = [filepath.stem for filepath in response.abs_paths]
+    response.experiment_names = [
+        filepath.stem for filepath in response.abs_paths]
     return response
 
 
 @app.post("/register_experiment/")
 async def register_experiment(experiment_config: str = Form(...),
                               train_file: UploadFile = File(...)) -> MessageResponse:
-    
+
     experiment_config = ExperimentConfig(**json.loads(experiment_config))
     path = Path(os.sep.join(["runs", f"{experiment_config.name}"]))
     if path.exists():
@@ -84,7 +85,8 @@ async def existing_experiments(experiment_name: str = Query(...)) -> ExperimentC
 
 @app.get("/needs_training/")
 async def existing_experiments(experiment_name: str = Query(...)) -> BoolResponse:
-    path = Path(os.sep.join(["runs", experiment_name, 'convergence_history.json']))
+    path = Path(os.sep.join(
+        ["runs", experiment_name, 'convergence_history.json']))
     return BoolResponse(response=not path.exists())
 
 
@@ -134,7 +136,8 @@ async def register_experiment(experiment_name: str = Query(...)) -> MessageRespo
 
 @app.get("/get_convergence_history/")
 async def existing_experiments(experiment_name: str = Query(...)) -> ConvergenceHistoryResponse:
-    path = Path(os.sep.join(["runs", experiment_name, 'convergence_history.json']))
+    path = Path(os.sep.join(
+        ["runs", experiment_name, 'convergence_history.json']))
     response = ConvergenceHistoryResponse(**json.loads(path.read_text()))
     return response
 
