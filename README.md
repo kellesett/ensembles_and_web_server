@@ -13,7 +13,7 @@ docker compose up
 ## Создание нового эксперимента
 
 ![alt text](fig/start-page.jpg)
-![alt text](fig/expreg.jpg)
+![alt text](fig/exp-reg.jpg)
 
 
 ## Обучение модели
