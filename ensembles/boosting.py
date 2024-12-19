@@ -41,6 +41,7 @@ class GradientBoostingMSE:
             DecisionTreeRegressor(**tree_params) for _ in range(n_estimators)
         ]
         self.fitted_estimators = 0
+        self.const_prediction = 0
 
     def fit(
         self,
@@ -70,13 +71,14 @@ class GradientBoostingMSE:
             trace = True
         elif trace is None:
             trace = False
+        self.const_prediction = y.mean()
         
         times = list()
         history = ConvergenceHistory(train=[], val=[])
-        pred = np.zeros((X.shape[0]))
+        pred = np.ones((X.shape[0])) * self.const_prediction
 
         if y_val is not None:
-            val_pred = np.zeros((X_val.shape[0]))
+            val_pred = np.ones((X_val.shape[0])) * self.const_prediction
         for epoch, estimator in enumerate(self.forest):
             idx = np.random.choice(np.arange(y.shape[0]), y.shape[0], replace=True)
             grad = y - pred
@@ -115,7 +117,7 @@ class GradientBoostingMSE:
         if self.fitted_estimators == 0:
             raise NotFittedError
 
-        predictions = np.zeros((X.shape[0], ))
+        predictions = np.ones((X.shape[0])) * self.const_prediction
         for i in range(self.fitted_estimators):
             predictions += self.learning_rate * self.forest[i].predict(X)
 
