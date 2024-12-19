@@ -70,7 +70,7 @@ class Client:
 
         Args:
             experiment_name (Any): The name of the experiment.
-        
+
         Returns:
             bool: indicator was the model ever trained.
         """

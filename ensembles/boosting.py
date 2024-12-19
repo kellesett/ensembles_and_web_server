@@ -72,7 +72,7 @@ class GradientBoostingMSE:
         elif trace is None:
             trace = False
         self.const_prediction = y.mean()
-        
+
         times = list()
         history = ConvergenceHistory(train=[], val=[])
         pred = np.ones((X.shape[0])) * self.const_prediction
@@ -80,7 +80,8 @@ class GradientBoostingMSE:
         if y_val is not None:
             val_pred = np.ones((X_val.shape[0])) * self.const_prediction
         for epoch, estimator in enumerate(self.forest):
-            idx = np.random.choice(np.arange(y.shape[0]), y.shape[0], replace=True)
+            idx = np.random.choice(
+                np.arange(y.shape[0]), y.shape[0], replace=True)
             grad = y - pred
 
             start = perf_counter()
@@ -89,15 +90,15 @@ class GradientBoostingMSE:
             pred += self.learning_rate * estimator.predict(X)
             times.append(perf_counter() - start)
             history['train'].append(rmse(y, pred))
-            
+
             if y_val is not None:
                 val_pred += self.learning_rate * estimator.predict(X_val)
                 history['val'].append(rmse(y_val, val_pred))
-            
+
             if patience is not None and whether_to_stop(history, patience):
                 break
 
-        if trace:        
+        if trace:
             return history, times
         else:
             return None
@@ -160,7 +161,8 @@ class GradientBoostingMSE:
         """
         with (Path(dirpath) / "params.json").open() as file:
             params = json.load(file)
-        instance = cls(params["n_estimators"], learning_rate=params["learning_rate"])
+        instance = cls(params["n_estimators"],
+                       learning_rate=params["learning_rate"])
 
         trees_path = Path(dirpath) / "trees"
 
